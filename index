@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Prompt Generator 4x4</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-group textarea {
+            height: 200px;
+            resize: vertical;
+        }
+
+        .grid-size-selector {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .grid-option {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .grid-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .grid-option.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .grid-option h4 {
+            margin-bottom: 5px;
+            font-size: 1.2em;
+        }
+
+        .grid-option small {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 30px auto;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .results {
+            display: none;
+            margin-top: 40px;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 40px;
+        }
+
+        .prompt-result {
+            margin-bottom: 40px;
+        }
+
+        .prompt-result h3 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 0;
+            font-size: 1.3em;
+        }
+
+        .prompt-content {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 0 0 10px 10px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .prompt-text {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .copy-btn.copied {
+            background: #17a2b8;
+        }
+
+        .word-count {
+            margin-top: 10px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .requirement-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .requirement-info strong {
+            color: #1976d2;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .grid-size-selector {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Bingo Prompt Generator</h1>
+            <p>สร้าง Prompt อัตโนมัติสำหรับเกม Bingo ในทุกหัวข้อ (รองรับ 3x3 และ 4x4)</p>
+            <p style="margin-top: 10px; font-size: 1em; opacity: 0.8;">พัฒนาโดย ครูนนทพัทธ์ หิรัญเรือง</p>
+        </div>
+
+        <div class="form-container">
+            <form id="bingoForm">
+                <div class="form-group">
+                    <label for="gridSize">📐 ขนาดตาราง Bingo:</label>
+                    <div class="grid-size-selector">
+                        <div class="grid-option" data-size="3x3" onclick="selectGridSize('3x3')">
+                            <h4>3×3</h4>
+                            <small>9 ช่อง - เหมาะสำหรับเด็กเล็ก</small>
+                        </div>
+                        <div class="grid-option selected" data-size="4x4" onclick="selectGridSize('4x4')">
+                            <h4>4×4</h4>
+                            <small>16 ช่อง - เหมาะสำหรับวัยรุ่น</small>
+                        </div>
+                        <div class="grid-option" data-size="5x5" onclick="selectGridSize('5x5')">
+                            <h4>5×5</h4>
+                            <small>25 ช่อง - เหมาะสำหรับผู้ใหญ่</small>
+                        </div>
+                    </div>
+                    <input type="hidden" id="selectedGridSize" value="4x4">
+                </div>
+
+                <div class="form-group">
+                    <label for="gameName">🎮 ชื่อเกม Bingo:</label>
+                    <input type="text" id="gameName" placeholder="เช่น เขียนแล้วได้อะไร, คำศัพท์โซเชียลมีเดีย, สถานที่ท่องเที่ยว" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="organization">🏢 ชื่อองค์กร/โรงเรียน (ถ้ามี):</label>
+                    <input type="text" id="organization" placeholder="เช่น โรงเรียนบ้านนา, บริษัท XYZ, ชมรม ABC">
+                </div>
+
+                <div class="form-group">
+                    <label for="logoUrl">🖼️ URL โลโก้ (ถ้ามี):</label>
+                    <input type="url" id="logoUrl" placeholder="https://example.com/logo.png">
+                </div>
+
+                <div class="form-group">
+                    <label for="vocabulary">📝 คำศัพท์ที่จะใช้เล่น (แยกด้วยการเคาะบรรทัด):</label>
+                    <textarea id="vocabulary" placeholder="เขียนบล็อก
+เขียนนิยาย
+เขียนบทความ
+เขียนบันทึก
+เขียนจดหมาย
+เขียนเพลง
+เขียนบทคัดลอก
+เขียนโค้ด
+เขียนสคริปต์
+เขียนสารคดี
+เขียนรีวิว
+เขียนไดอารี่
+เขียนสูตรอาหาร
+เขียนคำบรรยาย
+เขียนประกาศ
+เขียนใบสมัครงาน" required></textarea>
+                    <div class="word-count" id="wordCount">จำนวนคำ: 0</div>
+                    <div class="requirement-info" id="requirementInfo">
+                        <strong>ข้อกำหนด:</strong> ต้องมีคำศัพท์อย่างน้อย <span id="minWords">16</span> คำ สำหรับตาราง <span id="gridSizeDisplay">4×4</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="colorScheme">🎨 โทนสีที่ต้องการ:</label>
+                    <input type="text" id="colorScheme" placeholder="เช่น น้าเงิน-ขาว-ทอง, เขียว-น้าเงิน-ขาว, ม่วง-ฟ้า-ชมพู" required>
+                    <small style="color: #666; font-size: 0.9em; margin-top: 5px; display: block;">
+                        💡 ตัวอย่าง: แดง-เหลือง-ส้ม, เขียว-น้ำตาล-ฟ้า, เทา-น้าเงิน-ดำ
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="developerCredit">👨‍🏫 ข้อความเครดิต (ถ้ามี):</label>
+                    <input type="text" id="developerCredit" placeholder="เช่น พัฒนาโดยครูสมชาย, สร้างโดยครูมาลี โรงเรียนบ้านนา">
+                    <small style="color: #666; font-size: 0.9em; margin-top: 5px; display: block;">
+                        💡 จะแสดงที่ด้านล่างของเกม Bingo
+                    </small>
+                </div>
+
+                <button type="button" class="generate-btn" onclick="generatePrompts()">🚀 สร้าง Prompt</button>
+            </form>
+
+            <div class="results" id="results">
+                <div class="prompt-result">
+                    <h3>🎯 Prompt สำหรับสร้าง Bingo Card</h3>
+                    <div class="prompt-content">
+                        <button class="copy-btn" onclick="copyToClipboard('bingoCardPrompt')">คัดลอก</button>
+                        <div class="prompt-text" id="bingoCardPrompt"></div>
+                    </div>
+                </div>
+
+                <div class="prompt-result">
+                    <h3>🎲 Prompt สำหรับสร้างระบบสุ่มคำศัพท์</h3>
+                    <div class="prompt-content">
+                        <button class="copy-btn" onclick="copyToClipboard('randomSystemPrompt')">คัดลอก</button>
+                        <div class="prompt-text" id="randomSystemPrompt"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Grid size requirements
+        const gridRequirements = {
+            '3x3': { slots: 9, description: '3×3' },
+            '4x4': { slots: 16, description: '4×4' },
+            '5x5': { slots: 25, description: '5×5' }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded successfully');
+            
+            // Word counter
+            const vocabularyInput = document.getElementById('vocabulary');
+            if (vocabularyInput) {
+                vocabularyInput.addEventListener('input', function() {
+                    updateWordCount();
+                });
+            }
+
+            // Initialize word count display
+            updateWordCount();
+        });
+
+        function selectGridSize(size) {
+            // Remove selected class from all options
+            document.querySelectorAll('.grid-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            document.querySelector(`[data-size="${size}"]`).classList.add('selected');
+            
+            // Update hidden input
+            document.getElementById('selectedGridSize').value = size;
+            
+            // Update requirement info
+            updateRequirementInfo(size);
+            
+            // Update word count
+            updateWordCount();
+        }
+
+        function updateRequirementInfo(size) {
+            const requirement = gridRequirements[size];
+            document.getElementById('minWords').textContent = requirement.slots;
+            document.getElementById('gridSizeDisplay').textContent = requirement.description;
+        }
+
+        function updateWordCount() {
+            const vocabulary = document.getElementById('vocabulary').value.trim();
+            const lines = vocabulary ? vocabulary.split('\n').filter(line => line.trim().length > 0) : [];
+            const gridSize = document.getElementById('selectedGridSize').value;
+            const requirement = gridRequirements[gridSize];
+            
+            const wordCountElement = document.getElementById('wordCount');
+            wordCountElement.textContent = `จำนวนคำ: ${lines.length}`;
+            
+            // Change color based on requirement
+            if (lines.length >= requirement.slots) {
+                wordCountElement.style.color = '#28a745'; // Green
+            } else {
+                wordCountElement.style.color = '#dc3545'; // Red
+            }
+        }
+
+        function generatePrompts() {
+            console.log('generatePrompts function called');
+            
+            try {
+                const gameName = document.getElementById('gameName').value.trim();
+                const organization = document.getElementById('organization').value.trim();
+                const logoUrl = document.getElementById('logoUrl').value.trim();
+                const vocabulary = document.getElementById('vocabulary').value.trim();
+                const colorScheme = document.getElementById('colorScheme').value.trim();
+                const developerCredit = document.getElementById('developerCredit').value.trim();
+                const gridSize = document.getElementById('selectedGridSize').value;
+
+                console.log('Input values:', { gameName, organization, logoUrl, vocabulary, colorScheme, developerCredit, gridSize });
+
+                // Validate input
+                if (!gameName) {
+                    alert('กรุณากรอกชื่อเกม Bingo');
+                    return;
+                }
+
+                if (!vocabulary) {
+                    alert('กรุณากรอกคำศัพท์');
+                    return;
+                }
+
+                if (!colorScheme) {
+                    alert('กรุณากรอกโทนสี');
+                    return;
+                }
+
+                // Split by lines
+                const vocabularyList = vocabulary.split('\n').map(word => word.trim()).filter(word => word.length > 0);
+                const requirement = gridRequirements[gridSize];
+                
+                console.log('Vocabulary list:', vocabularyList);
+                
+                if (vocabularyList.length < requirement.slots) {
+                    alert(`ต้องมีคำศัพท์อย่างน้อย ${requirement.slots} คำ สำหรับตาราง ${requirement.description} (ปัจจุบันมี ${vocabularyList.length} คำ)`);
+                    return;
+                }
+
+                // Generate prompts
+                const bingoCardPrompt = generateBingoCardPrompt(gameName, organization, logoUrl, vocabularyList, colorScheme, developerCredit, gridSize);
+                const randomSystemPrompt = generateRandomSystemPrompt(gameName, vocabularyList, colorScheme, developerCredit);
+
+                console.log('Prompts generated successfully');
+
+                // Display results
+                const bingoCardElement = document.getElementById('bingoCardPrompt');
+                const randomSystemElement = document.getElementById('randomSystemPrompt');
+                const resultsElement = document.getElementById('results');
+
+                if (bingoCardElement && randomSystemElement && resultsElement) {
+                    bingoCardElement.textContent = bingoCardPrompt;
+                    randomSystemElement.textContent = randomSystemPrompt;
+                    resultsElement.style.display = 'block';
+
+                    // Scroll to results
+                    resultsElement.scrollIntoView({ behavior: 'smooth' });
+                    console.log('Results displayed successfully');
+                } else {
+                    console.error('Could not find result elements');
+                    alert('เกิดข้อผิดพลาดในการแสดงผล');
+                }
+
+            } catch (error) {
+                console.error('Error in generatePrompts:', error);
+                alert('เกิดข้อผิดพลาด: ' + error.message);
+            }
+        }
+
+        function generateBingoCardPrompt(gameName, organization, logoUrl, vocabularyList, colorScheme, developerCredit, gridSize) {
+            const orgText = organization ? organization : '[ชื่อองค์กร]';
+            const logoText = logoUrl ? logoUrl : '[URL โลโก้]';
+            const requirement = gridRequirements[gridSize];
+            const gridDescription = requirement.description;
+            const slots = requirement.slots;
+            
+            return `สร้าง Bingo Card แบบ Interactive สำหรับ${organization ? organization : 'องค์กร'} หัวข้อ "${gameName}" 
+ที่มีการเปลี่ยนหน้าจอแบบ Single Page Application (SPA) โดยเริ่มจากหน้าสร้างการ์ดทันที:
+
+1. หน้าแรก - เลือกคำศัพท์ (ระบบอัจฉริยะ):
+   ▪ Header สวยงาม:
+     - หัวข้อใหญ่ "${gameName}"
+     - หัวข้อรอง "${orgText}" (ถ้ามี)
+     - ธีมสี: ${colorScheme}
+     - พื้นหลังสวยงาม gradient
+   ▪ รายการคำศัพท์ ${vocabularyList.length} คำ: ${vocabularyList.join(', ')}
+   
+   ▪ ระบบ Drag & Drop ขั้นสูง:
+     - ลากคำศัพท์จากฝั่งซ้ายไปยังตาราง ${gridDescription} ฝั่งขวา
+     - เมื่อลากคำใส่ตาราง → คำนั้นจะหายไปจากรายการซ้าย (ป้องกันการเลือกซ้ำ)
+     - เมื่อลากคำออกจากตาราง → คำนั้นจะกลับมาอยู่ในรายการซ้าย
+     - การ์ดคำศัพท์มีเอฟเฟค hover และ shadow สวยงาม
+   
+   ▪ ตาราง ${gridDescription} (${slots} ช่อง):
+     - Drop zone ชัดเจน มีเส้นขอบ dotted
+     - แสดงข้อความ "ลากคำมาที่นี่" เมื่อว่าง
+     - เปลี่ยนสีเมื่อมีคำศัพท์
+   
+   ▪ ระบบสุ่มคำศัพท์อัตโนมัติ (เต็มตาราง):
+     - ปุ่ม "สุ่มให้อัตโนมัติ" ขนาดใหญ่ สีสันสดใส
+     - เมื่อคลิกครั้งเดียว → เอฟเฟคการสุ่ม 2-3 วินาที → เติมคำลงตาราง ${slots} ช่องให้เต็มทันที
+     - สุ่มจากคำศัพท์ทั้งหมด ${vocabularyList.length} คำ แบบไม่ซ้ำ
+     - หากตารางมีคำอยู่แล้วบางช่อง → ให้เคลียร์ทั้งหมดก่อน → จึงสุ่มใหม่เต็มตาราง
+     - เอฟเฟคการสุ่มแบบ Sequential: แต่ละช่องจะเติมทีละช่องด้วย animation delay
+     - แสดงข้อความ "กำลังสุ่มคำศัพท์..." ระหว่างสุ่ม
+   
+   ▪ ตัวแสดงสถานะ:
+     - "เลือกแล้ว X/${slots}" แบบ progress bar
+     - เปลี่ยนสีตาม progress (แดง → เหลือง → เขียว)
+   
+   ▪ ปุ่ม "สร้าง Bingo Card" (เปิดใช้เมื่อครบ ${slots} คำ)
+
+3. หน้าสอง - เล่น Bingo (ระบบเล่นต่อเนื่อง):
+   ▪ การ์ด Bingo ${gridDescription} แสดงคำที่เลือก:
+     - คลิกคำ → เปลี่ยนสีเป็น "ทำแล้ว" + เครื่องหมาย ✅
+     - คลิกอีกครั้ง → กลับสู่สถานะปกติ (toggle on/off)
+   
+   ▪ ระบบตรวจสอบการ Bingo แบบอัจฉริยะ:
+     - ตรวจแนวนอน ${gridDescription.split('×')[0]} แถว
+     - ตรวจแนวตั้ง ${gridDescription.split('×')[1]} คอลัมน์  
+     - ตรวจทแยงมุม 2 เส้น
+     - แสดงเส้น Highlight เมื่อ Bingo (สีทอง เรืองแสง)
+   
+   ▪ Modal แสดงการ Bingo:
+     - ป๊อปอัพสวยงาม พื้นหลัง overlay
+     - ข้อความแสดงความยินดี + เอฟเฟค confetti
+     - แสดงรูปแบบที่ชนะ (แถว/คอลัมน์/ทแยง)
+     - ปุ่ม "เล่นต่อ" → ปิด modal กลับสู่เกม
+     - ปุ่ม "เริ่มเกมใหม่" → รีเซ็ตทั้งหมด
+   
+   ▪ ระบบเล่นต่อเนื่อง:
+     - หลัง Bingo แรก → เครื่องหมาย ✅ ยังอยู่
+     - สามารถทำ Bingo ครั้งที่ 2, 3, 4... ต่อได้
+     - นับจำนวนครั้งที่ Bingo "Bingo ครั้งที่ X"
+     - เก็บสถิติการเล่น
+   
+   ▪ การแสดงผล:
+     - Counter แสดงจำนวน Bingo ที่ทำได้
+     - Progress การทำเครื่องหมาย "X/${slots} ช่อง"
+     - เวลาที่เล่น (Timer)${developerCredit ? `\n     - แสดงเครดิต: "${developerCredit}"` : ''}
+
+ข้อกำหนดเทคนิคสำคัญ:
+- ไม่มี scroll ใช้ hide/show หน้าเท่านั้น
+- Responsive design รองรับมือถือและแท็บเล็ต
+- ใช้ HTML5 Drag & Drop API พร้อม touch support
+- Modal system ด้วย CSS/JavaScript
+- เอฟเฟค animation สวยงาม มี transitions
+- ฟอนต์ไทยชัดเจน มี shadow และ border
+- ธีมสี: ${colorScheme}
+- Visual feedback ทุกการโต้ตอบ
+- Local storage เก็บประวัติการเล่น
+- Sound effects เมื่อ Bingo (ถ้าเป็นไปได้)`;
+        }
+
+        function generateRandomSystemPrompt(gameName, vocabularyList, colorScheme, developerCredit) {
+            return `สร้างระบบสุ่มคำ ${gameName} สำหรับเกม Bingo ที่ตื่นเต้นและน่าลุ้น ประกอบด้วย:
+
+1. หน้าจอหลักสวยงาม พื้นหลัง gradient สี${colorScheme}
+2. ปุ่ม "สุ่มคำ${gameName}" ขนาดใหญ่ สีสันสดใส มีเอฟเฟคเรืองแสง
+3. กล่องแสดงผลที่มี:
+   - เอฟเฟคการหมุน (spinning) ก่อนแสดงผล
+   - คำที่สุ่มได้ขนาดใหญ่ชัดเจน
+   - เอฟเฟคแสงกระพริบ รอบๆ กล่อง
+   - การเปลี่ยนสีพื้นหลังแบบสุ่ม
+
+4. รายการคำศัพท์ทั้ง ${vocabularyList.length} คำ:
+   ${vocabularyList.join(', ')}
+
+5. ฟีเจอร์พิเศษ:
+   - เสียงเอฟเฟค (ถ้าทำได้)
+   - ตัวนับจำนวนครั้งที่สุ่ม
+   - ปุ่ม "รีเซ็ต" เพื่อเริ่มใหม่
+   - แสดงประวัติ 5 คำล่าสุด
+   - ป้องกันคำซ้ำจนกว่าจะครบรอบ
+   - แสดงจำนวนคำที่เหลือ${developerCredit ? `\n   - แสดงเครดิต: "${developerCredit}"` : ''}
+
+6. การออกแบบ:
+   - Responsive design รองรับทุกขนาดหน้าจอ
+   - Smooth animations และ transitions
+   - Particles effect หรือ confetti เมื่อสุ่มได้
+   - ฟอนต์ไทยชัดเจน มี shadow และ border
+   - ธีมสี: ${colorScheme}
+   - Visual feedback ทุกการโต้ตอบ
+
+7. การทำงาน:
+   - คลิกปุ่มสุ่ม → แสดงเอฟเฟคโหลด 2-3 วินาที → แสดงผล
+   - บันทึกประวัติการสุ่ม
+   - ตรวจสอบคำซ้ำอัตโนมัติ
+   - รีเซ็ตเมื่อสุ่มครบทุกคำพร้อมแจ้งเตือน
+   - แสดงสถิติการใช้งาน
+
+สำคัญ: ใช้เป็นระบบแยกจาก Bingo Card เพื่อครู/ผู้ดำเนินรายการใช้สุ่มคำให้ผู้เล่น`;
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = element.parentElement.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = 'คัดลอกแล้ว!';
+                btn.classList.add('copied');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const btn = element.parentElement.querySelector('.copy-btn');
+                btn.textContent = 'คัดลอกแล้ว!';
+                setTimeout(() => {
+                    btn.textContent = 'คัดลอก';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
